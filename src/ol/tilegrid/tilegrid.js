@@ -154,6 +154,12 @@ ol.tilegrid.TileGrid = function(options) {
    */
   this.tmpSize_ = [0, 0];
 
+  /**
+   * @private
+   * @type {number}
+   */
+   this.buffer = goog.isDef(options.buffer) ? options.buffer : 0;
+   goog.asserts.assert(this.buffer >= 0, 'buffer must not be < 0');
 };
 
 
@@ -325,8 +331,30 @@ ol.tilegrid.TileGrid.prototype.getTileRangeForExtentAndResolution =
   var minY = tileCoord[2];
   this.getTileCoordForXYAndResolution_(
       extent[2], extent[3], resolution, true, tileCoord);
-  return ol.TileRange.createOrUpdate(
-      minX, tileCoord[1], minY, tileCoord[2], opt_tileRange);
+  if (this.buffer > 0)
+  {
+      var bufferSize = this.buffer; // * this.tileSize;
+      var fullTileRange = this.getFullTileRange(this.getZForResolution(resolution));
+
+      if (fullTileRange === null)
+          return ol.TileRange.createOrUpdate(
+              minX - bufferSize,
+              tileCoord[1] + bufferSize,
+              minY - bufferSize,
+              tileCoord[2] + bufferSize,
+              opt_tileRange);
+      else
+          return ol.TileRange.createOrUpdate(
+              Math.max(fullTileRange.minX, minX - bufferSize),
+              Math.min(fullTileRange.maxX, tileCoord[1] + bufferSize),
+              Math.max(fullTileRange.minY, minY - bufferSize),
+              Math.min(fullTileRange.maxY, tileCoord[2] + bufferSize),
+              opt_tileRange);
+  }
+  else
+  {
+      return ol.TileRange.createOrUpdate(minX, tileCoord[1], minY, tileCoord[2], opt_tileRange);
+  }
 };
 
 

@@ -920,6 +920,64 @@ describe('ol.tilegrid.TileGrid', function() {
       expect(tileRange.maxX).to.eql(9);
       expect(tileRange.maxY).to.eql(9);
     });
+
+    it('returns the expected TileRange when buffered', function() {
+      var buffer = 2;
+      var partialExtent = [30000, 30000, 70000, 70000];
+      var tileGrid = new ol.tilegrid.TileGrid({
+        resolutions: resolutions,
+        origin: origin,
+        tileSize: tileSize,
+        buffer: buffer
+      });
+      var tileGrid;
+      var tileRange;
+
+      // Unconstrained (no extent or sizes)
+      tileGrid = new ol.tilegrid.TileGrid({
+        resolutions: resolutions,
+        origin: origin,
+        tileSize: tileSize,
+        buffer: buffer
+      });
+
+      tileRange = tileGrid.getTileRangeForExtentAndResolution(extent,
+          resolutions[3]);
+      expect(tileRange.minX).to.eql(-2);
+      expect(tileRange.minY).to.eql(-2);
+      expect(tileRange.maxX).to.eql(11);
+      expect(tileRange.maxY).to.eql(11);
+
+      tileRange = tileGrid.getTileRangeForExtentAndResolution(partialExtent,
+          resolutions[3]);
+      expect(tileRange.minX).to.eql(3 - buffer);
+      expect(tileRange.minY).to.eql(3 - buffer);
+      expect(tileRange.maxX).to.eql(6 + buffer);
+      expect(tileRange.maxY).to.eql(6 + buffer);
+
+      // Constrained by extent
+      tileGrid = new ol.tilegrid.TileGrid({
+        resolutions: resolutions,
+        origin: origin,
+        tileSize: tileSize,
+        buffer: buffer,
+        extent: extent
+      });
+
+      tileRange = tileGrid.getTileRangeForExtentAndResolution(extent,
+          resolutions[3]);
+      expect(tileRange.minX).to.eql(0);
+      expect(tileRange.minY).to.eql(0);
+      expect(tileRange.maxX).to.eql(9);
+      expect(tileRange.maxY).to.eql(9);
+
+      tileRange = tileGrid.getTileRangeForExtentAndResolution(partialExtent,
+          resolutions[3]);
+      expect(tileRange.minX).to.eql(3 - buffer);
+      expect(tileRange.minY).to.eql(3 - buffer);
+      expect(tileRange.maxX).to.eql(6 + buffer);
+      expect(tileRange.maxY).to.eql(6 + buffer);
+    });
   });
 
   describe('getTileRangeForExtentAndZ', function() {
